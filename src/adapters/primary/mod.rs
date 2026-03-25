@@ -3,6 +3,6 @@
 //! These adapters drive the application from external inputs.
 
 pub mod cli;
-pub mod api;
 
+// Re-export CLI types
 pub use cli::*;

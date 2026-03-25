@@ -3,6 +3,6 @@
 //! These adapters are driven by the application.
 
 pub mod config;
-pub mod logging;
 
+// Re-export config types
 pub use config::*;

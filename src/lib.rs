@@ -45,8 +45,7 @@ pub mod prelude {
     pub use crate::adapters::secondary::config::*;
 }
 
-pub use domain::entities::{Command, Argument, Option, Flag};
+pub use domain::entities::{Command, Argument, CliOption, Flag};
 pub use domain::value_objects::{Input, Output, Context, Result};
-pub use application::commands::Handler;
+pub use application::commands::DefaultHandler;
 pub use application::queries::QueryHandler;
-pub use infrastructure::error::Error;

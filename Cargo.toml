@@ -39,6 +39,7 @@ uuid = { version = "1.0", features = ["v4", "serde"] }
 semver = "1.0"
 glob = "0.3"
 libloading = "0.8"
+serde_json = "1.0.149"
 
 [dev-dependencies]
 proptest = "1.0"

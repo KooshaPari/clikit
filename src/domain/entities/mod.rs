@@ -19,7 +19,7 @@ pub struct Command {
     /// Arguments
     pub arguments: Vec<Argument>,
     /// Options (flags)
-    pub options: Vec<Option>,
+    pub options: Vec<CliOption>,
     /// Flags
     pub flags: Vec<Flag>,
 }
@@ -57,7 +57,7 @@ impl Command {
         self
     }
 
-    pub fn option(mut self, opt: Option) -> Self {
+    pub fn option(mut self, opt: CliOption) -> Self {
         self.options.push(opt);
         self
     }
@@ -110,9 +110,10 @@ impl Argument {
     }
 }
 
-/// Option represents a named option (--name value)
+/// CliOption represents a named option (--name value)
+/// Renamed from Option to avoid collision with std::option::Option
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Option {
+pub struct CliOption {
     pub short: Option<char>,
     pub long: String,
     pub description: String,
@@ -121,7 +122,7 @@ pub struct Option {
     pub default_value: Option<String>,
 }
 
-impl Option {
+impl CliOption {
     pub fn long(mut self, long: impl Into<String>) -> Self {
         self.long = long.into();
         self
@@ -202,6 +203,12 @@ impl ParsedInput {
         }
     }
 
+    /// Set arguments (builder pattern)
+    pub fn arguments(mut self, args: HashMap<String, Vec<String>>) -> Self {
+        self.arguments = args;
+        self
+    }
+
     pub fn get_arg(&self, name: &str) -> Option<&str> {
         self.arguments.get(name).and_then(|v| v.first().map(|s| s.as_str()))
     }
@@ -232,8 +239,9 @@ mod tests {
 
     #[test]
     fn test_parsed_input() {
-        let input = ParsedInput::new("greet")
-            .arguments([("name".to_string(), vec!["Alice".to_string()])].into_iter().collect());
+        let mut args = HashMap::new();
+        args.insert("name".to_string(), vec!["Alice".to_string()]);
+        let input = ParsedInput::new("greet").arguments(args);
 
         assert_eq!(input.get_arg("name"), Some("Alice"));
     }

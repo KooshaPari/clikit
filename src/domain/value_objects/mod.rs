@@ -46,6 +46,30 @@ impl Input {
         self
     }
 
+    /// Get flag value
+    /// Get argument value
+    pub fn get_str(&self, name: &str) -> Option<&str> {
+        match self.args.get(name)? {
+            ArgValue::String(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    /// Get flag value
+    pub fn get_flag(&self, name: &str) -> bool {
+        self.flags.get(name).copied().unwrap_or(false)
+    }
+
+    /// Get option value
+    pub fn get_opt(&self, name: &str) -> Option<&str> {
+        self.opts.get(name).and_then(|s| s.as_deref())
+    }
+
+    /// Get argument value
+    pub fn get_arg(&self, name: &str) -> Option<&ArgValue> {
+        self.args.get(name)
+    }
+
     pub fn subcommand(mut self, sub: impl Into<String>) -> Self {
         self.subcommand = Some(sub.into());
         self
@@ -91,7 +115,7 @@ impl Output {
         }
     }
 
-    pub fn json<T: serde::Serialize>(value: &T) -> Result<Self, serde_json::Error> {
+    pub fn json<T: serde::Serialize>(value: &T) -> std::result::Result<Self, serde_json::Error> {
         let json = serde_json::to_string_pretty(value)?;
         Ok(Self {
             content: OutputContent::Json(json),
@@ -168,23 +192,24 @@ impl Context {
         }
     }
 
-    pub fn get_arg(&self, name: &str) -> Option<&ArgValue> {
-        self.input.args.get(name)
-    }
-
-    pub fn get_str(&self, name: &str) -> Option<&str> {
-        match self.input.args.get(name) {
-            Some(ArgValue::String(s)) => Some(s),
-            _ => None,
-        }
-    }
-
-    pub fn get_opt(&self, name: &str) -> Option<&str> {
-        self.input.opts.get(name).and_then(|o| o.as_deref())
-    }
-
+    /// Get flag value from underlying input
     pub fn get_flag(&self, name: &str) -> bool {
-        self.input.flags.get(name).copied().unwrap_or(false)
+        self.input.get_flag(name)
+    }
+
+    /// Get option value from underlying input
+    pub fn get_opt(&self, name: &str) -> Option<&str> {
+        self.input.get_opt(name)
+    }
+
+    /// Get argument value from underlying input
+    pub fn get_arg(&self, name: &str) -> Option<&ArgValue> {
+        self.input.get_arg(name)
+    }
+
+    /// Get argument as string
+    pub fn get_str(&self, name: &str) -> Option<&str> {
+        self.input.get_str(name)
     }
 }
 
@@ -216,3 +241,4 @@ mod tests {
         }
     }
 }
+

@@ -21,7 +21,7 @@ impl PluginManager {
         Self { plugins: Vec::new() }
     }
 
-    pub fn load_from_dir(&mut self, dir: &Path) -> Result<Vec<&str>> {
+    pub fn load_from_dir(&mut self, dir: &Path) -> Result<Vec<String>> {
         if !dir.exists() {
             return Err(DomainError::PluginError(
                 format!("Plugin directory does not exist: {:?}", dir)
@@ -44,18 +44,18 @@ impl PluginManager {
         Ok(loaded)
     }
 
-    pub fn load_plugin(&mut self, path: &Path) -> Result<&str> {
+    pub fn load_plugin(&mut self, path: &Path) -> Result<String> {
         #[cfg(unix)]
-        let sym = unsafe { Library::new(path) }
+        let lib = unsafe { Library::new(path) }
             .map_err(|e| DomainError::PluginError(e.to_string()))?;
 
         #[cfg(windows)]
-        let sym = unsafe { Library::new(path) }
+        let lib = unsafe { Library::new(path) }
             .map_err(|e| DomainError::PluginError(e.to_string()))?;
 
         type CreatePlugin = fn() -> Box<dyn Plugin>;
 
-        let create: Symbol<CreatePlugin> = unsafe { sym.get(b"create_plugin") }
+        let create: Symbol<CreatePlugin> = unsafe { lib.get(b"create_plugin") }
             .map_err(|e| DomainError::PluginError(format!("Failed to get create_plugin: {:?}", e)))?;
 
         let plugin = create();
@@ -65,11 +65,11 @@ impl PluginManager {
 
         self.plugins.push(LoadedPlugin {
             name: name.clone(),
-            library: sym,
+            library: lib,
             _plugin: plugin,
         });
 
-        Ok(self.plugins.last().unwrap().name.as_str())
+        Ok(name)
     }
 
     pub fn list_plugins(&self) -> Vec<&str> {
