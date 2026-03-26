@@ -162,6 +162,3 @@ mod tests {
         assert_eq!(input.get_str("config"), Some("settings.toml"));
     }
 }
-
-
-
