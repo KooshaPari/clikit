@@ -1,3 +1,4 @@
 //! Tracing infrastructure
 
-use tracing::{Span, instrument};
+pub fn init_tracing() {}
+

@@ -3,7 +3,7 @@
 //! Commands represent write operations in the application.
 
 use async_trait::async_trait;
-use crate::domain::{Command, Input, Output, Context, Result, CommandHandler};
+use crate::domain::{Command, Context, Output, Result, CommandHandler};
 
 /// Default command handler implementation
 pub struct DefaultHandler<F, Fut>
@@ -68,14 +68,12 @@ impl Default for CommandExecutor {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::Input;
 
     #[test]
     fn test_handler_creation() {
-        // This test just verifies the handler can be created without panic
         let _handler = DefaultHandler::new(|_ctx: &Context| async move {
             Ok(Output::text("test".to_string()))
         });
-        // If we get here, creation succeeded
     }
 }
+

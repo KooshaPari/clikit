@@ -5,8 +5,8 @@
 use crate::domain::{
     Command, Input, Output, Result,
     ConfigLoader, Logger, Telemetry,
+    CommandRegistry, InputValidator,
 };
-use std::sync::Arc;
 
 /// Main CLI application service
 pub struct CliApplication {
@@ -54,6 +54,22 @@ impl CliApplication {
         self.commands.iter().collect()
     }
 
+    pub fn registry(&self) -> CommandRegistry {
+        let mut registry = CommandRegistry::new();
+        for command in &self.commands {
+            let _ = registry.register(command.clone());
+        }
+        registry
+    }
+
+    pub fn help(&self) -> String {
+        self.registry().help_overview()
+    }
+
+    pub fn help_for(&self, name: &str) -> Option<String> {
+        self.registry().help_for(name)
+    }
+
     pub fn run(&self, input: Input) -> Result<Output> {
         let start = std::time::Instant::now();
         let cmd_name = input.command.clone();
@@ -75,16 +91,13 @@ impl CliApplication {
     }
 
     fn execute_internal(&self, name: &str, input: Input) -> Result<Output> {
-        // Find command
         let command = self.get_command(name)
             .ok_or_else(|| crate::domain::DomainError::CommandNotFound(name.to_string()))?;
 
-        // For now, return help text
-        Ok(Output::text(format!(
-            "Command: {}\nDescription: {}",
-            command.name,
-            command.description
-        )))
+        let validator = InputValidator::new(self.commands.clone());
+        validator.validate(&input)?;
+
+        Ok(Output::text(CommandRegistry::format_command_help(command)))
     }
 }
 
@@ -100,3 +113,4 @@ impl CliApplication {
         Self::new().command(command)
     }
 }
+

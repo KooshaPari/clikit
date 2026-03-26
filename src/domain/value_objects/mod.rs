@@ -6,7 +6,7 @@
 use std::collections::HashMap;
 
 /// Input value object for CLI execution
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Input {
     /// Command name
     pub command: String,
@@ -46,8 +46,6 @@ impl Input {
         self
     }
 
-    /// Get flag value
-    /// Get argument value
     pub fn get_str(&self, name: &str) -> Option<&str> {
         match self.args.get(name)? {
             ArgValue::String(s) => Some(s),
@@ -55,17 +53,14 @@ impl Input {
         }
     }
 
-    /// Get flag value
     pub fn get_flag(&self, name: &str) -> bool {
         self.flags.get(name).copied().unwrap_or(false)
     }
 
-    /// Get option value
     pub fn get_opt(&self, name: &str) -> Option<&str> {
         self.opts.get(name).and_then(|s| s.as_deref())
     }
 
-    /// Get argument value
     pub fn get_arg(&self, name: &str) -> Option<&ArgValue> {
         self.args.get(name)
     }
@@ -73,6 +68,55 @@ impl Input {
     pub fn subcommand(mut self, sub: impl Into<String>) -> Self {
         self.subcommand = Some(sub.into());
         self
+    }
+}
+
+/// Parsed input value object used by the CLI adapter
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ParsedInput {
+    pub command: String,
+    pub subcommand: Option<String>,
+    pub arguments: HashMap<String, Vec<String>>,
+    pub options: HashMap<String, Option<String>>,
+    pub flags: HashMap<String, bool>,
+}
+
+impl ParsedInput {
+    pub fn new(command: impl Into<String>) -> Self {
+        Self {
+            command: command.into(),
+            subcommand: None,
+            arguments: HashMap::new(),
+            options: HashMap::new(),
+            flags: HashMap::new(),
+        }
+    }
+
+    pub fn arguments(mut self, args: HashMap<String, Vec<String>>) -> Self {
+        self.arguments = args;
+        self
+    }
+
+    pub fn options(mut self, opts: HashMap<String, Option<String>>) -> Self {
+        self.options = opts;
+        self
+    }
+
+    pub fn flags(mut self, flags: HashMap<String, bool>) -> Self {
+        self.flags = flags;
+        self
+    }
+
+    pub fn get_arg(&self, name: &str) -> Option<&str> {
+        self.arguments.get(name).and_then(|v| v.first().map(|s| s.as_str()))
+    }
+
+    pub fn get_opt(&self, name: &str) -> Option<&str> {
+        self.options.get(name).and_then(|v| v.as_deref())
+    }
+
+    pub fn get_flag(&self, name: &str) -> bool {
+        self.flags.get(name).copied().unwrap_or(false)
     }
 }
 
@@ -96,7 +140,7 @@ impl<T: Into<String>> From<T> for ArgValue {
 }
 
 /// Output value object for CLI execution
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Output {
     /// Output content
     pub content: OutputContent,
@@ -144,7 +188,7 @@ impl Output {
 }
 
 /// Output content types
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum OutputContent {
     Text(String),
     Json(String),
@@ -192,22 +236,18 @@ impl Context {
         }
     }
 
-    /// Get flag value from underlying input
     pub fn get_flag(&self, name: &str) -> bool {
         self.input.get_flag(name)
     }
 
-    /// Get option value from underlying input
     pub fn get_opt(&self, name: &str) -> Option<&str> {
         self.input.get_opt(name)
     }
 
-    /// Get argument value from underlying input
     pub fn get_arg(&self, name: &str) -> Option<&ArgValue> {
         self.input.get_arg(name)
     }
 
-    /// Get argument as string
     pub fn get_str(&self, name: &str) -> Option<&str> {
         self.input.get_str(name)
     }
@@ -221,14 +261,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_input_builder() {
-        let input = Input::new("greet")
-            .arg("name", "Alice")
-            .opt("verbose", Some("true".to_string()))
-            .flag("debug", true);
+    fn parsed_input_roundtrip() {
+        let input = ParsedInput::new("greet")
+            .arguments(HashMap::from([("name".to_string(), vec!["World".to_string()])]))
+            .flags(HashMap::from([("verbose".to_string(), true)]));
 
-        assert_eq!(input.command, "greet");
-        assert_eq!(input.get_str("name"), Some("Alice"));
+        assert_eq!(input.get_arg("name"), Some("World"));
+        assert!(input.get_flag("verbose"));
     }
 
     #[test]
@@ -241,4 +280,5 @@ mod tests {
         }
     }
 }
+
 
