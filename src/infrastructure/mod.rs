@@ -9,3 +9,4 @@ pub mod tracing;
 
 pub use logging::*;
 pub use error::*;
+pub use tracing::*;

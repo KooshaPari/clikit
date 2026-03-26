@@ -3,7 +3,7 @@
 //! Commands represent write operations in the application.
 
 use async_trait::async_trait;
-use crate::domain::{Command, Context, Output, Result, CommandHandler};
+use crate::domain::{Command, Context, Output, Result, CommandHandler, CommandRegistry};
 
 /// Default command handler implementation
 pub struct DefaultHandler<F, Fut>
@@ -57,6 +57,22 @@ impl CommandExecutor {
     pub fn list_commands(&self) -> Vec<&Command> {
         self.commands.iter().collect()
     }
+
+    pub fn registry(&self) -> CommandRegistry {
+        let mut registry = CommandRegistry::new();
+        for command in &self.commands {
+            let _ = registry.register(command.clone());
+        }
+        registry
+    }
+
+    pub fn help_overview(&self) -> String {
+        self.registry().help_overview()
+    }
+
+    pub fn help_for(&self, name: &str) -> Option<String> {
+        self.registry().help_for(name)
+    }
 }
 
 impl Default for CommandExecutor {
@@ -74,6 +90,15 @@ mod tests {
         let _handler = DefaultHandler::new(|_ctx: &Context| async move {
             Ok(Output::text("test".to_string()))
         });
+    }
+
+    #[test]
+    fn command_executor_renders_help() {
+        let executor = CommandExecutor::new()
+            .register(Command::new("serve").description("Run the server"));
+
+        assert!(executor.help_overview().contains("serve"));
+        assert!(executor.help_for("serve").unwrap().contains("Command: serve"));
     }
 }
 
