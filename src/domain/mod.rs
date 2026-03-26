@@ -12,7 +12,7 @@ pub mod errors;
 
 pub use entities::{Argument, CliOption, Command, Flag};
 pub use value_objects::{ArgValue, Context, Input, Output, OutputContent, ParsedInput, Result};
-pub use services::*;
+pub use services::{CommandRegistry, InputValidator};
 pub use ports::*;
 pub use events::*;
 pub use errors::*;

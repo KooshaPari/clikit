@@ -18,7 +18,7 @@ pub mod prelude {
     pub use crate::domain::entities::{Argument, CliOption, Command, Flag};
     pub use crate::domain::events::*;
     pub use crate::domain::ports::{CliParser, CommandExecutor as CommandExecutorPort, CommandHandler as CommandHandlerPort, ConfigLoader, Logger, OutputFormatter, Persistence, Plugin, PluginLoader, Telemetry};
-    pub use crate::domain::services::*;
+    pub use crate::domain::services::{CommandRegistry, InputValidator};
     pub use crate::domain::value_objects::{ArgValue, Context, Input, Output, OutputContent, ParsedInput, Result};
 }
 
@@ -26,4 +26,5 @@ pub use application::commands::DefaultHandler;
 pub use application::queries::QueryHandler;
 pub use domain::entities::{Argument, CliOption, Command, Flag};
 pub use domain::ports::{CliParser, CommandExecutor as CommandExecutorPort, CommandHandler as CommandHandlerPort, ConfigLoader, Logger, OutputFormatter, Persistence, Plugin, PluginLoader, Telemetry};
+pub use domain::services::{CommandRegistry, InputValidator};
 pub use domain::value_objects::{ArgValue, Context, Input, Output, OutputContent, ParsedInput, Result};

@@ -3,7 +3,6 @@
 //! Secondary adapter for loading configuration.
 
 use crate::domain::{ConfigLoader, Result, DomainError};
-use std::collections::HashMap;
 
 pub struct JsonConfigLoader {
     data: serde_json::Value,
@@ -78,3 +77,4 @@ impl ConfigLoader for TomlConfigLoader {
         Ok(Some(json))
     }
 }
+

@@ -5,7 +5,9 @@
 
 use crate::application::services::CliApplication;
 use crate::domain::entities::{Argument, Command};
+use crate::domain::services::CommandRegistry;
 use crate::domain::value_objects::{Input, Output, OutputContent, ParsedInput};
+use crate::domain::{CliParser, Result};
 use clap::Parser;
 
 #[derive(Parser, Debug, Clone)]
@@ -65,6 +67,39 @@ pub fn default_app() -> CliApplication {
     )
 }
 
+pub struct PrimaryCliParser;
+
+impl PrimaryCliParser {
+    pub fn new() -> Self {
+        Self
+    }
+
+    pub fn registry_help(registry: &CommandRegistry) -> String {
+        registry.help_overview()
+    }
+
+    pub fn command_help(command: &Command) -> String {
+        CommandRegistry::format_command_help(command)
+    }
+}
+
+impl Default for PrimaryCliParser {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl CliParser for PrimaryCliParser {
+    fn parse(&self, args: Vec<String>) -> Result<Input> {
+        let refs: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
+        Ok(to_input(parse_cli_from_args(&refs)))
+    }
+
+    fn format_help(&self, command: &Command) -> String {
+        Self::command_help(command)
+    }
+}
+
 pub fn run_cli() -> String {
     let parsed = parse_cli_from_args(&["clikit-example"]);
     let input = to_input(parsed);
@@ -98,6 +133,33 @@ mod tests {
         let app = default_app();
         let command = app.get_command("clikit-example").expect("command exists");
         assert_eq!(command.name, "clikit-example");
+    }
+
+    #[test]
+    fn primary_cli_parser_formats_help() {
+        let parser = PrimaryCliParser::new();
+        let command = Command::new("serve")
+            .description("Run the local server")
+            .version("1.2.3")
+            .argument(Argument::new("config").description("Config file path").required())
+            .flag(crate::domain::entities::Flag::new("verbose").short('v').description("Verbose output"));
+
+        let help = parser.format_help(&command);
+        assert!(help.contains("Command: serve"));
+        assert!(help.contains("Description: Run the local server"));
+        assert!(help.contains("Arguments:"));
+        assert!(help.contains("Flags:"));
+    }
+
+    #[test]
+    fn primary_cli_parser_parses_args() {
+        let parser = PrimaryCliParser::new();
+        let input = parser
+            .parse(vec!["clikit-example".to_string(), "--config".to_string(), "settings.toml".to_string()])
+            .expect("parse succeeds");
+
+        assert_eq!(input.command, "clikit-example");
+        assert_eq!(input.get_str("config"), Some("settings.toml"));
     }
 }
 
