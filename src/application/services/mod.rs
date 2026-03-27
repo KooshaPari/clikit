@@ -3,9 +3,8 @@
 //! Services that coordinate between multiple domain objects and ports.
 
 use crate::domain::{
-    Command, Context, Input, Output, Result,
-    ConfigLoader, Logger, Telemetry,
-    CommandRegistry, InputValidator,
+    Command, CommandRegistry, ConfigLoader, Context, Input, InputValidator, Logger, Output, Result,
+    Telemetry,
 };
 
 /// Main CLI application service
@@ -115,7 +114,8 @@ impl CliApplication {
     }
 
     fn execute_internal(&self, name: &str, input: Input) -> Result<Output> {
-        let command = self.get_command(name)
+        let command = self
+            .get_command(name)
             .ok_or_else(|| crate::domain::DomainError::CommandNotFound(name.to_string()))?;
 
         let validator = InputValidator::new(self.commands.clone());
@@ -137,4 +137,3 @@ impl CliApplication {
         Self::new().command(command)
     }
 }
-

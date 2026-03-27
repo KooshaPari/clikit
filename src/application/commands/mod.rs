@@ -2,8 +2,8 @@
 //!
 //! Commands represent write operations in the application.
 
+use crate::domain::{Command, CommandHandler, CommandRegistry, Context, Output, Result};
 use async_trait::async_trait;
-use crate::domain::{Command, Context, Output, Result, CommandHandler, CommandRegistry};
 
 /// Default command handler implementation
 pub struct DefaultHandler<F, Fut>
@@ -42,7 +42,9 @@ pub struct CommandExecutor {
 
 impl CommandExecutor {
     pub fn new() -> Self {
-        Self { commands: Vec::new() }
+        Self {
+            commands: Vec::new(),
+        }
     }
 
     pub fn register(mut self, command: Command) -> Self {
@@ -87,18 +89,21 @@ mod tests {
 
     #[test]
     fn test_handler_creation() {
-        let _handler = DefaultHandler::new(|_ctx: &Context| async move {
-            Ok(Output::text("test".to_string()))
-        });
+        let _handler =
+            DefaultHandler::new(
+                |_ctx: &Context| async move { Ok(Output::text("test".to_string())) },
+            );
     }
 
     #[test]
     fn command_executor_renders_help() {
-        let executor = CommandExecutor::new()
-            .register(Command::new("serve").description("Run the server"));
+        let executor =
+            CommandExecutor::new().register(Command::new("serve").description("Run the server"));
 
         assert!(executor.help_overview().contains("serve"));
-        assert!(executor.help_for("serve").unwrap().contains("Command: serve"));
+        assert!(executor
+            .help_for("serve")
+            .unwrap()
+            .contains("Command: serve"));
     }
 }
-

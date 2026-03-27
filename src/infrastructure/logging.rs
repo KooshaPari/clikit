@@ -43,7 +43,9 @@ pub struct SimpleLogger {
 
 impl SimpleLogger {
     pub fn new(prefix: &str) -> Self {
-        Self { prefix: prefix.to_string() }
+        Self {
+            prefix: prefix.to_string(),
+        }
     }
 }
 
