@@ -169,10 +169,8 @@ impl InputValidator {
             .ok_or_else(|| DomainError::CommandNotFound(input.command.clone()))?;
 
         for arg in &command.arguments {
-            if arg.required {
-                if !input.args.contains_key(&arg.name) {
-                    return Err(DomainError::MissingArgument(arg.name.clone()));
-                }
+            if arg.required && !input.args.contains_key(&arg.name) {
+                return Err(DomainError::MissingArgument(arg.name.clone()));
             }
         }
 

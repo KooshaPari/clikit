@@ -190,12 +190,13 @@ impl Output {
 }
 
 /// Output content types
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum OutputContent {
     Text(String),
     Json(String),
     Yaml(String),
     Error(String),
+    #[default]
     None,
 }
 
@@ -206,12 +207,6 @@ impl Default for Output {
             exit_code: 0,
             should_exit: false,
         }
-    }
-}
-
-impl Default for OutputContent {
-    fn default() -> Self {
-        OutputContent::None
     }
 }
 

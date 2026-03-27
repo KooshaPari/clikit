@@ -12,7 +12,7 @@ pub struct PluginManager {
 
 struct LoadedPlugin {
     name: String,
-    library: Library,
+    _library: Library,
     _plugin: Box<dyn Plugin>,
 }
 
@@ -73,7 +73,7 @@ impl PluginManager {
 
         self.plugins.push(LoadedPlugin {
             name: name.clone(),
-            library: lib,
+            _library: lib,
             _plugin: plugin,
         });
 
@@ -99,8 +99,8 @@ impl Default for PluginManager {
 }
 
 // Plugin must be implemented by plugins
-#[no_mangle]
-pub extern "C" fn create_plugin() -> Box<dyn Plugin> {
+
+pub fn create_plugin() -> Box<dyn Plugin> {
     // This function must be implemented by each plugin
     // For now, return a placeholder
     unimplemented!("Plugin must implement create_plugin()")

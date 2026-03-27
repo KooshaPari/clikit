@@ -14,7 +14,7 @@ impl JsonConfigLoader {
         Self { data }
     }
 
-    pub fn from_str(data: &str) -> Result<Self> {
+    pub fn from_config_str(data: &str) -> Result<Self> {
         let data: serde_json::Value =
             serde_json::from_str(data).map_err(|e| DomainError::ConfigError(e.to_string()))?;
         Ok(Self { data })
@@ -54,7 +54,7 @@ pub struct TomlConfigLoader {
 }
 
 impl TomlConfigLoader {
-    pub fn from_str(data: &str) -> Result<Self> {
+    pub fn from_config_str(data: &str) -> Result<Self> {
         let data: toml::Value =
             toml::from_str(data).map_err(|e| DomainError::ConfigError(e.to_string()))?;
         Ok(Self { data })
@@ -99,7 +99,7 @@ mod tests {
     #[test]
     fn json_loader_from_str_reads_nested_values() {
         let loader =
-            JsonConfigLoader::from_str(r#"{"app":{"name":"clikit"}}"#).expect("json parses");
+            JsonConfigLoader::from_config_str(r#"{"app":{"name":"clikit"}}"#).expect("json parses");
 
         assert_eq!(loader.get("app.name").unwrap(), Some(json!("clikit")));
         assert_eq!(loader.load().unwrap(), json!({"app": {"name": "clikit"}}));
@@ -107,7 +107,7 @@ mod tests {
 
     #[test]
     fn toml_loader_from_str_reads_nested_values() {
-        let loader = TomlConfigLoader::from_str(
+        let loader = TomlConfigLoader::from_config_str(
             r#"[app]
 name = "clikit""#,
         )
