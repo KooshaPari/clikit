@@ -108,7 +108,9 @@ impl ParsedInput {
     }
 
     pub fn get_arg(&self, name: &str) -> Option<&str> {
-        self.arguments.get(name).and_then(|v| v.first().map(|s| s.as_str()))
+        self.arguments
+            .get(name)
+            .and_then(|v| v.first().map(|s| s.as_str()))
     }
 
     pub fn get_opt(&self, name: &str) -> Option<&str> {
@@ -188,12 +190,13 @@ impl Output {
 }
 
 /// Output content types
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum OutputContent {
     Text(String),
     Json(String),
     Yaml(String),
     Error(String),
+    #[default]
     None,
 }
 
@@ -204,12 +207,6 @@ impl Default for Output {
             exit_code: 0,
             should_exit: false,
         }
-    }
-}
-
-impl Default for OutputContent {
-    fn default() -> Self {
-        OutputContent::None
     }
 }
 
@@ -263,7 +260,10 @@ mod tests {
     #[test]
     fn parsed_input_roundtrip() {
         let input = ParsedInput::new("greet")
-            .arguments(HashMap::from([("name".to_string(), vec!["World".to_string()])]))
+            .arguments(HashMap::from([(
+                "name".to_string(),
+                vec!["World".to_string()],
+            )]))
             .flags(HashMap::from([("verbose".to_string(), true)]));
 
         assert_eq!(input.get_arg("name"), Some("World"));
@@ -280,5 +280,3 @@ mod tests {
         }
     }
 }
-
-

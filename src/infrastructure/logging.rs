@@ -1,12 +1,14 @@
 //! Logging infrastructure
 
 use crate::domain::Logger;
-use tracing::{info, debug, warn, error};
+use crate::infrastructure::tracing::init_tracing;
+use tracing::{debug, error, info, warn};
 
 pub struct TracingLogger;
 
 impl TracingLogger {
     pub fn new() -> Self {
+        let _ = init_tracing();
         Self
     }
 }
@@ -41,7 +43,9 @@ pub struct SimpleLogger {
 
 impl SimpleLogger {
     pub fn new(prefix: &str) -> Self {
-        Self { prefix: prefix.to_string() }
+        Self {
+            prefix: prefix.to_string(),
+        }
     }
 }
 

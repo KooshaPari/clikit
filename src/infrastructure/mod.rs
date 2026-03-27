@@ -3,9 +3,10 @@
 //! This layer contains infrastructure implementations like logging,
 //! tracing, and error handling.
 
-pub mod logging;
 pub mod error;
+pub mod logging;
 pub mod tracing;
 
-pub use logging::*;
 pub use error::*;
+pub use logging::*;
+pub use tracing::*;

@@ -210,7 +210,9 @@ impl ParsedInput {
     }
 
     pub fn get_arg(&self, name: &str) -> Option<&str> {
-        self.arguments.get(name).and_then(|v| v.first().map(|s| s.as_str()))
+        self.arguments
+            .get(name)
+            .and_then(|v| v.first().map(|s| s.as_str()))
     }
 
     pub fn get_opt(&self, name: &str) -> Option<&str> {

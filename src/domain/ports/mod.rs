@@ -3,8 +3,8 @@
 //! Ports define the interfaces that adapters must implement.
 //! This follows the hexagonal architecture pattern.
 
+use super::{Command, Context, Input, Output, Result};
 use async_trait::async_trait;
-use super::{Command, Input, Output, Context, Result};
 
 /// Inbound port for command execution
 #[async_trait]
@@ -123,11 +123,21 @@ mod tests {
     struct TestPlugin;
 
     impl Plugin for TestPlugin {
-        fn name(&self) -> &str { "test-plugin" }
-        fn version(&self) -> &str { "1.0.0" }
-        fn init(&self) -> Result<()> { Ok(()) }
-        fn commands(&self) -> Vec<Command> { vec![] }
-        fn cleanup(&self) -> Result<()> { Ok(()) }
+        fn name(&self) -> &str {
+            "test-plugin"
+        }
+        fn version(&self) -> &str {
+            "1.0.0"
+        }
+        fn init(&self) -> Result<()> {
+            Ok(())
+        }
+        fn commands(&self) -> Vec<Command> {
+            vec![]
+        }
+        fn cleanup(&self) -> Result<()> {
+            Ok(())
+        }
     }
 
     #[test]

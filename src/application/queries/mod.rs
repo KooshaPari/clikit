@@ -3,8 +3,8 @@
 //! Queries represent read operations in the application.
 //! Following CQRS pattern.
 
+use crate::domain::{Context, Output, Result};
 use async_trait::async_trait;
-use crate::domain::{Context, Result, Output};
 
 /// Query handler trait
 #[async_trait]
@@ -50,7 +50,9 @@ pub struct QueryExecutor {
 
 impl QueryExecutor {
     pub fn new() -> Self {
-        Self { handlers: Vec::new() }
+        Self {
+            handlers: Vec::new(),
+        }
     }
 
     pub fn register(mut self, name: &str, handler: Box<dyn QueryHandler>) -> Self {
@@ -59,7 +61,8 @@ impl QueryExecutor {
     }
 
     pub async fn execute(&self, name: &str, ctx: &Context) -> Result<Output> {
-        let handler = self.handlers
+        let handler = self
+            .handlers
             .iter()
             .find(|(n, _)| n == name)
             .map(|(_, h)| h)

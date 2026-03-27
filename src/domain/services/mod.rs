@@ -2,7 +2,7 @@
 //!
 //! Services that contain domain logic that doesn't belong to a single entity.
 
-use crate::domain::{Command, Result, DomainError};
+use crate::domain::{Command, DomainError, Result};
 use std::fmt::Write as _;
 
 /// Command registry service
@@ -12,7 +12,9 @@ pub struct CommandRegistry {
 
 impl CommandRegistry {
     pub fn new() -> Self {
-        Self { commands: Vec::new() }
+        Self {
+            commands: Vec::new(),
+        }
     }
 
     pub fn register(&mut self, command: Command) -> Result<()> {
@@ -36,7 +38,8 @@ impl CommandRegistry {
     }
 
     pub fn find_matching(&self, name: &str) -> Vec<&Command> {
-        self.commands.iter()
+        self.commands
+            .iter()
             .filter(|c| c.name.contains(name) || c.description.contains(name))
             .collect()
     }
@@ -92,10 +95,7 @@ impl CommandRegistry {
                 let _ = writeln!(
                     output,
                     "  {} [{}] - {}{}",
-                    arg.name,
-                    requirement,
-                    description,
-                    default_value
+                    arg.name, requirement, description, default_value
                 );
             }
         }
@@ -123,12 +123,7 @@ impl CommandRegistry {
                 let _ = writeln!(
                     output,
                     "  {}--{}{} [{}] - {}{}",
-                    short,
-                    opt.long,
-                    value_name,
-                    requirement,
-                    description,
-                    default_value
+                    short, opt.long, value_name, requirement, description, default_value
                 );
             }
         }
@@ -167,15 +162,15 @@ impl InputValidator {
     }
 
     pub fn validate(&self, input: &crate::domain::Input) -> Result<()> {
-        let command = self.commands.iter()
+        let command = self
+            .commands
+            .iter()
             .find(|c| c.name == input.command)
             .ok_or_else(|| DomainError::CommandNotFound(input.command.clone()))?;
 
         for arg in &command.arguments {
-            if arg.required {
-                if !input.args.contains_key(&arg.name) {
-                    return Err(DomainError::MissingArgument(arg.name.clone()));
-                }
+            if arg.required && !input.args.contains_key(&arg.name) {
+                return Err(DomainError::MissingArgument(arg.name.clone()));
             }
         }
 

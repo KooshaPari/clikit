@@ -141,8 +141,16 @@ mod tests {
         let command = Command::new("serve")
             .description("Run the local server")
             .version("1.2.3")
-            .argument(Argument::new("config").description("Config file path").required())
-            .flag(crate::domain::entities::Flag::new("verbose").short('v').description("Verbose output"));
+            .argument(
+                Argument::new("config")
+                    .description("Config file path")
+                    .required(),
+            )
+            .flag(
+                crate::domain::entities::Flag::new("verbose")
+                    .short('v')
+                    .description("Verbose output"),
+            );
 
         let help = parser.format_help(&command);
         assert!(help.contains("Command: serve"));
@@ -155,13 +163,14 @@ mod tests {
     fn primary_cli_parser_parses_args() {
         let parser = PrimaryCliParser::new();
         let input = parser
-            .parse(vec!["clikit-example".to_string(), "--config".to_string(), "settings.toml".to_string()])
+            .parse(vec![
+                "clikit-example".to_string(),
+                "--config".to_string(),
+                "settings.toml".to_string(),
+            ])
             .expect("parse succeeds");
 
         assert_eq!(input.command, "clikit-example");
         assert_eq!(input.get_str("config"), Some("settings.toml"));
     }
 }
-
-
-

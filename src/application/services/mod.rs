@@ -3,9 +3,8 @@
 //! Services that coordinate between multiple domain objects and ports.
 
 use crate::domain::{
-    Command, Input, Output, Result,
-    ConfigLoader, Logger, Telemetry,
-    CommandRegistry, InputValidator,
+    Command, CommandRegistry, ConfigLoader, Context, Input, InputValidator, Logger, Output, Result,
+    Telemetry,
 };
 
 /// Main CLI application service
@@ -70,15 +69,39 @@ impl CliApplication {
         self.registry().help_for(name)
     }
 
+    pub fn context(&self, input: Input) -> Context {
+        let mut context = Context::new(input);
+
+        if let Some(ref loader) = self.config_loader {
+            if let Ok(config) = loader.load() {
+                if let Some(map) = config.as_object() {
+                    context.config = map.clone().into_iter().collect();
+                }
+            }
+        }
+
+        context
+    }
+
+    pub fn config_value(&self, key: &str) -> Option<serde_json::Value> {
+        self.config_loader
+            .as_ref()
+            .and_then(|loader| loader.get(key).ok().flatten())
+    }
+
     pub fn run(&self, input: Input) -> Result<Output> {
         let start = std::time::Instant::now();
         let cmd_name = input.command.clone();
+        let context = self.context(input);
 
         if let Some(ref logger) = self.logger {
             logger.info(&format!("Executing command: {}", cmd_name));
+            if !context.config.is_empty() {
+                logger.debug(&format!("Loaded {} config entries", context.config.len()));
+            }
         }
 
-        let result = self.execute_internal(&cmd_name, input);
+        let result = self.execute_internal(&cmd_name, context.input);
 
         let duration = start.elapsed().as_millis() as u64;
 
@@ -91,7 +114,8 @@ impl CliApplication {
     }
 
     fn execute_internal(&self, name: &str, input: Input) -> Result<Output> {
-        let command = self.get_command(name)
+        let command = self
+            .get_command(name)
             .ok_or_else(|| crate::domain::DomainError::CommandNotFound(name.to_string()))?;
 
         let validator = InputValidator::new(self.commands.clone());
@@ -113,4 +137,3 @@ impl CliApplication {
         Self::new().command(command)
     }
 }
-

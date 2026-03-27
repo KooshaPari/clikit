@@ -2,7 +2,8 @@
 //!
 //! Secondary adapter for loading configuration.
 
-use crate::domain::{ConfigLoader, Result, DomainError};
+use crate::domain::{ConfigLoader, DomainError, Result};
+use std::path::Path;
 
 pub struct JsonConfigLoader {
     data: serde_json::Value,
@@ -13,10 +14,16 @@ impl JsonConfigLoader {
         Self { data }
     }
 
-    pub fn from_file(path: &std::path::Path) -> Result<Self> {
+    pub fn from_config_str(data: &str) -> Result<Self> {
+        let data: serde_json::Value =
+            serde_json::from_str(data).map_err(|e| DomainError::ConfigError(e.to_string()))?;
+        Ok(Self { data })
+    }
+
+    pub fn from_file(path: &Path) -> Result<Self> {
         let content = std::fs::read_to_string(path)?;
-        let data: serde_json::Value = serde_json::from_str(&content)
-            .map_err(|e| DomainError::ConfigError(e.to_string()))?;
+        let data: serde_json::Value =
+            serde_json::from_str(&content).map_err(|e| DomainError::ConfigError(e.to_string()))?;
         Ok(Self { data })
     }
 }
@@ -47,10 +54,16 @@ pub struct TomlConfigLoader {
 }
 
 impl TomlConfigLoader {
-    pub fn from_file(path: &std::path::Path) -> Result<Self> {
+    pub fn from_config_str(data: &str) -> Result<Self> {
+        let data: toml::Value =
+            toml::from_str(data).map_err(|e| DomainError::ConfigError(e.to_string()))?;
+        Ok(Self { data })
+    }
+
+    pub fn from_file(path: &Path) -> Result<Self> {
         let content = std::fs::read_to_string(path)?;
-        let data: toml::Value = toml::from_str(&content)
-            .map_err(|e| DomainError::ConfigError(e.to_string()))?;
+        let data: toml::Value =
+            toml::from_str(&content).map_err(|e| DomainError::ConfigError(e.to_string()))?;
         Ok(Self { data })
     }
 }
@@ -78,3 +91,29 @@ impl ConfigLoader for TomlConfigLoader {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn json_loader_from_str_reads_nested_values() {
+        let loader =
+            JsonConfigLoader::from_config_str(r#"{"app":{"name":"clikit"}}"#).expect("json parses");
+
+        assert_eq!(loader.get("app.name").unwrap(), Some(json!("clikit")));
+        assert_eq!(loader.load().unwrap(), json!({"app": {"name": "clikit"}}));
+    }
+
+    #[test]
+    fn toml_loader_from_str_reads_nested_values() {
+        let loader = TomlConfigLoader::from_config_str(
+            r#"[app]
+name = "clikit""#,
+        )
+        .expect("toml parses");
+
+        assert_eq!(loader.get("app.name").unwrap(), Some(json!("clikit")));
+        assert_eq!(loader.load().unwrap(), json!({"app": {"name": "clikit"}}));
+    }
+}
