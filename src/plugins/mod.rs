@@ -98,10 +98,37 @@ impl Default for PluginManager {
     }
 }
 
-// Plugin must be implemented by plugins
+pub mod example;
 
-pub fn create_plugin() -> Box<dyn Plugin> {
-    // This function must be implemented by each plugin
-    // For now, return a placeholder
-    unimplemented!("Plugin must implement create_plugin()")
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    #[test]
+    fn test_plugin_manager_new() {
+        let mgr = PluginManager::new();
+        assert!(mgr.list_plugins().is_empty());
+    }
+
+    #[test]
+    fn test_plugin_manager_load_from_nonexistent_dir() {
+        let mut mgr = PluginManager::new();
+        let result = mgr.load_from_dir(Path::new("/nonexistent/plugin/dir"));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_plugin_manager_list_initially_empty() {
+        let mgr = PluginManager::new();
+        let plugins = mgr.list_plugins();
+        assert_eq!(plugins.len(), 0);
+    }
+
+    #[test]
+    fn test_plugin_manager_get_commands_empty() {
+        let mgr = PluginManager::new();
+        let cmds = mgr.get_commands();
+        assert!(cmds.is_empty());
+    }
 }
