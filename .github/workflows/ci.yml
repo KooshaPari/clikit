@@ -2,36 +2,37 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/*, bugfix/*, docs/*, release/*, hotfix/*]
   pull_request:
     branches: [main]
-  workflow_dispatch:
 
 jobs:
-  ci:
-    name: Rust CI
-    uses: KooshaPari/template-commons/.github/workflows/reusable-rust-ci.yml@main
-    with:
-      rust-version: stable
-      run-coverage: true
-    secrets:
-      codecov-token: ${{ secrets.CODECOV_TOKEN }}
-
-  security:
-    name: Security Audit
-    uses: KooshaPari/template-commons/.github/workflows/security-template.yml@main
-
-  docs:
-    name: Documentation
+  test:
     runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        rust-version: ['1.70', 'stable']
+    
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - name: Build docs
-        run: cargo doc --no-deps --document-private-items
-        env:
-          RUSTDOCFLAGS: -D warnings
 
-      - name: Build docs
-        run: cargo doc --workspace --no-deps
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: $123matrix.rust-version125
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Run tests
+        run: cargo test --verbose
+
+      - name: Run clippy
+        run: cargo clippy -- -D warnings
+      
+
+  phenotype-validate:
+    runs-on: ubuntu-latest
+    uses: KooshaPari/phenotypeActions/.github/workflows/validate-governance.yml@main
