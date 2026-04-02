@@ -21,7 +21,7 @@ futures = "0.3"
 # Application layer
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.8"
-yaml-rust2 = "0.8"
+yaml-rust2 = "0.11"
 
 # Adapters
 clap = { version = "4.0", features = ["derive", "env"] }
