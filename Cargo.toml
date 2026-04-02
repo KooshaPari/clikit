@@ -10,6 +10,8 @@ documentation = "https://docs.rs/clikit"
 keywords = ["cli", "framework", "command-line", "hexagonal", "architecture"]
 categories = ["command-line-utilities", "development-tools"]
 
+[workspace]
+
 [dependencies]
 # Core domain (no external deps)
 thiserror = "2"
