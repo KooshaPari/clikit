@@ -40,7 +40,7 @@ uuid = { version = "1.0", features = ["v4", "serde"] }
 # Plugin system
 semver = "1.0"
 glob = "0.3"
-libloading = "0.8"
+libloading = "0.9"
 serde_json = "1.0.149"
 
 [dev-dependencies]
